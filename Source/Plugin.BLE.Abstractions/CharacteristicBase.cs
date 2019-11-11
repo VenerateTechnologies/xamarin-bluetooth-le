@@ -70,6 +70,16 @@ namespace Plugin.BLE.Abstractions
                 throw new InvalidOperationException("Characteristic does not support read.");
             }
 
+            if (Configuration.SPP.IsSPP)
+            {
+                lock (Configuration.SPP.Lock)
+                {
+                    var objTask = ReadNativeAsync();
+                    var objResult = objTask.GetAwaiter().GetResult();
+                    return objResult;
+                }
+            }
+
             Trace.Message("Characteristic.ReadAsync");
             return await ReadNativeAsync();
         }
@@ -87,6 +97,16 @@ namespace Plugin.BLE.Abstractions
             }
 
             var writeType = GetWriteType();
+
+            if (Configuration.SPP.IsSPP)
+            {
+                lock (Configuration.SPP.Lock)
+                {
+                    var objTask = WriteNativeAsync(data, writeType);
+                    var objResult = objTask.GetAwaiter().GetResult();
+                    return objResult;
+                }
+            }
 
             Trace.Message("Characteristic.WriteAsync");
             return await WriteNativeAsync(data, writeType);
