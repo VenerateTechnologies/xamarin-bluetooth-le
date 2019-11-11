@@ -11,6 +11,9 @@ using Plugin.BLE.Android.CallbackEventArgs;
 using Plugin.BLE.Extensions;
 using Plugin.BLE.Abstractions.Utils;
 
+using Handler = Android.OS.Handler;
+using Looper = Android.OS.Looper;
+
 namespace Plugin.BLE.Android
 {
     public class Characteristic : CharacteristicBase
@@ -67,9 +70,15 @@ namespace Plugin.BLE.Android
 
         void ReadInternal()
         {
-            if (!_gatt.ReadCharacteristic(_nativeCharacteristic))
+            using (var h = new Handler(Looper.MainLooper))
             {
-                throw new CharacteristicReadException("BluetoothGattCharacteristic.readCharacteristic returned FALSE");
+                h.Post(() =>
+                {
+                    if (!_gatt.ReadCharacteristic(_nativeCharacteristic))
+                    {
+                        throw new CharacteristicReadException("BluetoothGattCharacteristic.readCharacteristic returned FALSE");
+                    }
+                });
             }
         }
 
@@ -98,16 +107,22 @@ namespace Plugin.BLE.Android
 
         private void InternalWrite(byte[] data)
         {
-            if (!_nativeCharacteristic.SetValue(data))
+            using (var h = new Handler(Looper.MainLooper))
             {
-                throw new CharacteristicReadException("Gatt characteristic set value FAILED.");
-            }
+                h.Post(() =>
+                {
+                    if (!_nativeCharacteristic.SetValue(data))
+                    {
+                        throw new CharacteristicReadException("Gatt characteristic set value FAILED.");
+                    }
 
-            Trace.Message("Write {0}", Id);
+                    Trace.Message("Write {0}", Id);
 
-            if (!_gatt.WriteCharacteristic(_nativeCharacteristic))
-            {
-                throw new CharacteristicReadException("Gatt write characteristic FAILED.");
+                    if (!_gatt.WriteCharacteristic(_nativeCharacteristic))
+                    {
+                        throw new CharacteristicReadException("Gatt write characteristic FAILED.");
+                    }
+                });
             }
         }
 
