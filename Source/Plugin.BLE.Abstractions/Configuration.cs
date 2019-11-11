@@ -12,5 +12,7 @@ namespace Plugin.BLE
 
             internal static object Lock { get; set; } = new object();
         }
+
+        public static bool IsForceUI { get; set; } = false;
     }
 }

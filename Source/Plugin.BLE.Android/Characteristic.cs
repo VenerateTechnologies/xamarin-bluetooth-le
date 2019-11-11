@@ -70,15 +70,23 @@ namespace Plugin.BLE.Android
 
         void ReadInternal()
         {
-            using (var h = new Handler(Looper.MainLooper))
-            {
-                h.Post(() =>
+            if (Configuration.IsForceUI)
+                using (var h = new Handler(Looper.MainLooper))
                 {
-                    if (!_gatt.ReadCharacteristic(_nativeCharacteristic))
+                    h.Post(() =>
                     {
-                        throw new CharacteristicReadException("BluetoothGattCharacteristic.readCharacteristic returned FALSE");
-                    }
-                });
+                        if (!_gatt.ReadCharacteristic(_nativeCharacteristic))
+                        {
+                            throw new CharacteristicReadException("BluetoothGattCharacteristic.readCharacteristic returned FALSE");
+                        }
+                    });
+                }
+            else
+            {
+                if (!_gatt.ReadCharacteristic(_nativeCharacteristic))
+                {
+                    throw new CharacteristicReadException("BluetoothGattCharacteristic.readCharacteristic returned FALSE");
+                }
             }
         }
 
@@ -107,22 +115,37 @@ namespace Plugin.BLE.Android
 
         private void InternalWrite(byte[] data)
         {
-            using (var h = new Handler(Looper.MainLooper))
-            {
-                h.Post(() =>
+            if (Configuration.IsForceUI)
+                using (var h = new Handler(Looper.MainLooper))
                 {
-                    if (!_nativeCharacteristic.SetValue(data))
+                    h.Post(() =>
                     {
-                        throw new CharacteristicReadException("Gatt characteristic set value FAILED.");
-                    }
+                        if (!_nativeCharacteristic.SetValue(data))
+                        {
+                            throw new CharacteristicReadException("Gatt characteristic set value FAILED.");
+                        }
 
-                    Trace.Message("Write {0}", Id);
+                        Trace.Message("Write {0}", Id);
 
-                    if (!_gatt.WriteCharacteristic(_nativeCharacteristic))
-                    {
-                        throw new CharacteristicReadException("Gatt write characteristic FAILED.");
-                    }
-                });
+                        if (!_gatt.WriteCharacteristic(_nativeCharacteristic))
+                        {
+                            throw new CharacteristicReadException("Gatt write characteristic FAILED.");
+                        }
+                    });
+                }
+            else
+            {
+                if (!_nativeCharacteristic.SetValue(data))
+                {
+                    throw new CharacteristicReadException("Gatt characteristic set value FAILED.");
+                }
+
+                Trace.Message("Write {0}", Id);
+
+                if (!_gatt.WriteCharacteristic(_nativeCharacteristic))
+                {
+                    throw new CharacteristicReadException("Gatt write characteristic FAILED.");
+                }
             }
         }
 
