@@ -112,6 +112,63 @@ namespace Plugin.BLE.Abstractions
             return await WriteNativeAsync(data, writeType);
         }
 
+        public async Task<bool> WriteWithoutResponseAsync(byte[] data, CancellationToken cancellationToken = default)
+        {
+            if (data == null)
+            {
+                throw new ArgumentNullException(nameof(data));
+            }
+
+            if (!CanWrite)
+            {
+                throw new InvalidOperationException("Characteristic does not support write.");
+            }
+
+            var writeType = GetWriteType();
+
+            if (Configuration.SPP.IsSPP)
+            {
+                lock (Configuration.SPP.Lock)
+                {
+                    var objTask = WriteNativeAsync(data, CharacteristicWriteType.WithoutResponse);
+                    var objResult = objTask.GetAwaiter().GetResult();
+                    return objResult;
+                }
+            }
+
+            Trace.Message("Characteristic.WriteAsync");
+            return await WriteNativeAsync(data, CharacteristicWriteType.WithoutResponse);
+        }
+
+        public async Task<bool> WriteWithResponseAsync(byte[] data, CancellationToken cancellationToken = default)
+        {
+            if (data == null)
+            {
+                throw new ArgumentNullException(nameof(data));
+            }
+
+            if (!CanWrite)
+            {
+                throw new InvalidOperationException("Characteristic does not support write.");
+            }
+
+            var writeType = GetWriteType();
+
+            if (Configuration.SPP.IsSPP)
+            {
+                lock (Configuration.SPP.Lock)
+                {
+                    var objTask = WriteNativeAsync(data, CharacteristicWriteType.WithResponse);
+                    var objResult = objTask.GetAwaiter().GetResult();
+                    return objResult;
+                }
+            }
+
+            Trace.Message("Characteristic.WriteAsync");
+            return await WriteNativeAsync(data, CharacteristicWriteType.WithResponse);
+        }
+
+
         private CharacteristicWriteType GetWriteType()
         {
             if (WriteType != CharacteristicWriteType.Default)
