@@ -130,14 +130,14 @@ namespace Plugin.BLE.Abstractions
             {
                 lock (Configuration.SPP.Lock)
                 {
-                    var objTask = WriteNativeAsync(data, CharacteristicWriteType.WithoutResponse);
-                    var objResult = objTask.GetAwaiter().GetResult();
-                    return objResult;
+                    WriteNativeAsync(data, CharacteristicWriteType.WithoutResponse);
+                    return true;
                 }
             }
 
             Trace.Message("Characteristic.WriteAsync");
-            return await WriteNativeAsync(data, CharacteristicWriteType.WithoutResponse);
+            WriteNativeAsync(data, CharacteristicWriteType.WithoutResponse);
+            return true;
         }
 
         public async Task<bool> WriteWithResponseAsync(byte[] data, CancellationToken cancellationToken = default)
